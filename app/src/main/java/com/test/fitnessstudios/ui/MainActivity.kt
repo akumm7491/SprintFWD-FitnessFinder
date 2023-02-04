@@ -75,9 +75,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun initializePager(){
+    private fun initializePager(){
         val pagerAdapter = PagerAdapter(supportFragmentManager, lifecycle)
         binding.pager.adapter = pagerAdapter
+
+        // Lets disable swiping on the viewpager so it doesn't interfere with the map
+        binding.pager.isUserInputEnabled = false;
 
         TabLayoutMediator(binding.tabs, binding.pager) { tab, position ->
             when(position){
