@@ -1,6 +1,6 @@
 package com.test.fitnessstudios.data.sources.remote.api
 
-import com.test.fitnessstudios.APIKeys
+import com.test.fitnessstudios.BuildConfig
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -24,7 +24,7 @@ object YelpNetwork {
             Interceptor { chain ->
                 val builder = chain.request().newBuilder()
                 builder.header("accept", "application/json")
-                builder.header("Authorization", "Bearer ${APIKeys.yelpAPIKey}")
+                builder.header("Authorization", "Bearer ${BuildConfig.YELP_API_KEY}")
                 return@Interceptor chain.proceed(builder.build())
             }
         )
