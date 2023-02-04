@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="rv_divider_start_and_end_padding">8dp</dimen>
+</resources>
