@@ -1,10 +1,16 @@
 package com.test.fitnessstudios.ui.fragments
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -12,7 +18,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.test.fitnessstudios.R
@@ -44,6 +49,19 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         0f // default bearing
     )
 
+    private var locationPermissionGranted = false
+    @SuppressLint("MissingPermission")
+    private val requestPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            locationPermissionGranted = isGranted
+            Log.e(TAG, "Location permission granted: $isGranted")
+
+            // Enable the location layer if the permissions are granted
+            map.isMyLocationEnabled = isGranted
+        }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -55,7 +73,10 @@ class MapFragment : Fragment(R.layout.fragment_map) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // Check initial location permissions
+        checkLocationPermissions()
 
+        // Initialize ViewModel to listen for studio updates
         studioViewModel = ViewModelProvider(requireActivity())[StudioViewModel::class.java]
 
         // Initialize map fragment and get the map asynchronously
@@ -67,6 +88,13 @@ class MapFragment : Fragment(R.layout.fragment_map) {
             // Start listening for studio updates now that the map is initialized.
             listenForStudioUpdates()
         }
+    }
+
+    private fun checkLocationPermissions() {
+        locationPermissionGranted = ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun listenForStudioUpdates() {
@@ -85,7 +113,16 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         map.animateCamera(CameraUpdateFactory.newCameraPosition(defaultCameraPosition))
         map.uiSettings.isCompassEnabled = true
         map.uiSettings.isRotateGesturesEnabled = true
-        map.uiSettings.isTiltGesturesEnabled = true
+        map.uiSettings.isMyLocationButtonEnabled = true
+        requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+
+        map.setOnMyLocationClickListener {
+            if(locationPermissionGranted){
+                zoomToLatLng(LatLng(it.latitude, it.longitude), 10f)
+            }else {
+                requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            }
+        }
 
         map.setOnMarkerClickListener { marker ->
             val studioId = marker.tag as String
@@ -96,12 +133,17 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                     clickedStudio.coordinates.latitude,
                     clickedStudio.coordinates.longitude
                 ),
-                6f
+                14f
             )
-            // Return false to indicate that we have not consumed the event and that we wish
-            // for the default behavior to occur (which is for the camera to move such that the
-            // marker is centered and for the marker's info window to open, if it has one).
-            false
+            marker.showInfoWindow()
+            true
+        }
+
+        map.setOnInfoWindowClickListener { marker ->
+            val studioId = marker.tag as String
+            val clickedStudio = currentStudios.first { it.id == studioId }
+            Log.d(TAG, "Clicked on studio info window: $clickedStudio")
+            // TODO: Navigate to details screen
         }
     }
 
