@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.test.fitnessstudios.R
@@ -35,9 +36,8 @@ class MapFragment : Fragment(R.layout.fragment_map) {
     private var studioMarkers = ArrayList<Marker>()
     private var currentStudios = emptyList<Studio>()
 
-
     // Default Camera Position
-    val defaultCameraPosition = CameraPosition(
+    private val defaultCameraPosition = CameraPosition(
         LatLng(DEFAULT_LATITUDE, DEFAULT_LONGITUDE),
         12.0f, // Roughly city level
         0f, // No tilt
@@ -55,6 +55,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         studioViewModel = ViewModelProvider(requireActivity())[StudioViewModel::class.java]
 
         // Initialize map fragment and get the map asynchronously
@@ -85,10 +86,18 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         map.uiSettings.isCompassEnabled = true
         map.uiSettings.isRotateGesturesEnabled = true
         map.uiSettings.isTiltGesturesEnabled = true
-//        map.setOnMarkerClickListener { marker ->
-//            val studioId = marker.tag as String
-//
-//        }
+        map.setOnMarkerClickListener(object: OnMarkerClickListener{
+            override fun onMarkerClick(marker: Marker): Boolean {
+                val studioId = marker.tag as String
+                val clickedStudio = currentStudios.first { it.id == studioId }
+                Log.d(TAG, "Clicked on studio: $clickedStudio")
+                // Return false to indicate that we have not consumed the event and that we wish
+                // for the default behavior to occur (which is for the camera to move such that the
+                // marker is centered and for the marker's info window to open, if it has one).
+                return false
+            }
+
+        })
     }
 
     private fun updateMapWithStudios(studios: List<Studio>){
