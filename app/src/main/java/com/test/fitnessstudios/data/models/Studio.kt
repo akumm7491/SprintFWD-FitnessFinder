@@ -12,8 +12,8 @@ data class Studio(
 )
 
 data class Coordinates(
-    val latitude: String,
-    val longitude: String
+    val latitude: Double,
+    val longitude: Double
 )
 
 /**  Yelp Business Response Format

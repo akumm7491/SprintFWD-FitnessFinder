@@ -18,6 +18,7 @@ import com.test.fitnessstudios.R
 import com.test.fitnessstudios.databinding.ActivityMainBinding
 import com.test.fitnessstudios.helpers.Constants.DEFAULT_LATITUDE
 import com.test.fitnessstudios.helpers.Constants.DEFAULT_LONGITUDE
+import com.test.fitnessstudios.ui.adapters.PagerAdapter
 import com.test.fitnessstudios.ui.fragments.MapFragment
 import com.test.fitnessstudios.ui.fragments.StudioListFragment
 import com.test.fitnessstudios.ui.viewmodels.StudioViewModel
@@ -52,6 +53,21 @@ class MainActivity : AppCompatActivity() {
         getNearbyStudios()
     }
 
+    private fun initializePager(){
+        val pagerAdapter = PagerAdapter(supportFragmentManager, lifecycle)
+        binding.pager.adapter = pagerAdapter
+
+        // Lets disable swiping on the viewpager so it doesn't interfere with the map
+        binding.pager.isUserInputEnabled = false;
+
+        TabLayoutMediator(binding.tabs, binding.pager) { tab, position ->
+            when(position){
+                0 -> tab.text = "Map"
+                1 -> tab.text = "List"
+            }
+        }.attach()
+    }
+
     private fun getNearbyStudios(){
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -72,35 +88,6 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
-        }
-    }
-
-    fun initializePager(){
-        val pagerAdapter = PagerAdapter(supportFragmentManager, lifecycle)
-        binding.pager.adapter = pagerAdapter
-
-        TabLayoutMediator(binding.tabs, binding.pager) { tab, position ->
-            when(position){
-                0 -> tab.text = "Map"
-                1 -> tab.text = "List"
-            }
-        }.attach()
-    }
-
-    /**
-     * A simple pager adapter that represents our list and map fragments
-     */
-    class PagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle) :
-        FragmentStateAdapter(fragmentManager, lifecycle) {
-        override fun getItemCount(): Int = 2
-
-        override fun createFragment(position: Int): Fragment {
-            lateinit var fragment: Fragment
-            when(position){
-                0 -> { fragment =  MapFragment() }
-                1 -> { fragment = StudioListFragment() }
-            }
-            return fragment
         }
     }
 }

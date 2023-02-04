@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
+    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
 
 android {
@@ -14,8 +15,13 @@ android {
         targetSdk 33
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        Properties properties = new Properties()
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+        manifestPlaceholders = [MAPS_API_KEY: "${properties.getProperty('MAPS_API_KEY')}"]
+        buildConfigField "String", "MAPS_API_KEY", "\"${properties.getProperty('MAPS_API_KEY')}\""
+        buildConfigField "String", "YELP_API_KEY", "\"${properties.getProperty('YELP_API_KEY')}\""
     }
 
     buildFeatures {
@@ -52,6 +58,7 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
     implementation 'com.google.android.material:material:1.8.0'
+    implementation 'com.google.android.gms:play-services-maps:18.1.0'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'com.google.dagger:hilt-android:2.44'
     implementation 'com.google.dagger:dagger:2.44.2'
