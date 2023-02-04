@@ -86,18 +86,23 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         map.uiSettings.isCompassEnabled = true
         map.uiSettings.isRotateGesturesEnabled = true
         map.uiSettings.isTiltGesturesEnabled = true
-        map.setOnMarkerClickListener(object: OnMarkerClickListener{
-            override fun onMarkerClick(marker: Marker): Boolean {
-                val studioId = marker.tag as String
-                val clickedStudio = currentStudios.first { it.id == studioId }
-                Log.d(TAG, "Clicked on studio: $clickedStudio")
-                // Return false to indicate that we have not consumed the event and that we wish
-                // for the default behavior to occur (which is for the camera to move such that the
-                // marker is centered and for the marker's info window to open, if it has one).
-                return false
-            }
 
-        })
+        map.setOnMarkerClickListener { marker ->
+            val studioId = marker.tag as String
+            val clickedStudio = currentStudios.first { it.id == studioId }
+            Log.d(TAG, "Clicked on studio: $clickedStudio")
+            zoomToLatLng(
+                LatLng(
+                    clickedStudio.coordinates.latitude,
+                    clickedStudio.coordinates.longitude
+                ),
+                6f
+            )
+            // Return false to indicate that we have not consumed the event and that we wish
+            // for the default behavior to occur (which is for the camera to move such that the
+            // marker is centered and for the marker's info window to open, if it has one).
+            false
+        }
     }
 
     private fun updateMapWithStudios(studios: List<Studio>){
@@ -114,13 +119,28 @@ class MapFragment : Fragment(R.layout.fragment_map) {
             }
         }
 
-        // Animate camera to include all studios
+        // Animate camera to include all studios with 100 pixel buffer around the edges
+        // of the bounds of studios
+        zoomToBounds(getAllStudiosLatLngBounds(), 100)
+    }
+
+    private fun zoomToBounds(latLngBounds: LatLngBounds, padding: Int){
         map.animateCamera(
             CameraUpdateFactory.newLatLngBounds(
-                getAllStudiosLatLngBounds(),
-                100) // add a 100 pixel buffer around the edges of the bounds of studios
+                latLngBounds,
+                padding)
         )
     }
+
+    private fun zoomToLatLng(latLng: LatLng, zoom: Float){
+        // Animate camera to specified latLng
+        map.animateCamera(
+            CameraUpdateFactory.newLatLngZoom(
+                latLng, zoom
+            )
+        )
+    }
+
     private fun getAllStudiosLatLngBounds(): LatLngBounds {
         val builder = LatLngBounds.Builder()
         for (marker in studioMarkers) {
