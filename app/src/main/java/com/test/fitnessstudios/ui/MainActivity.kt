@@ -1,8 +1,12 @@
 package com.test.fitnessstudios.ui
 
+import android.content.Intent
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -36,6 +40,9 @@ class MainActivity : AppCompatActivity() {
     private val mainViewModel: MainViewModel by viewModels()
     private lateinit var binding: ActivityMainBinding
 
+    // Don't show the shareDetails button in the top bar by default.
+    private var hideShareDetails = true
+
     private val defaultLocation = Location("Default").apply {
         this.latitude = DEFAULT_LATITUDE
         this.longitude = DEFAULT_LONGITUDE
@@ -64,6 +71,31 @@ class MainActivity : AppCompatActivity() {
 
         // Start listening for studio detail updates
         listenForStudioDetailUpdates()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.details_menu, menu)
+        val menuItem = menu.findItem(R.id.share_details)
+        if(hideShareDetails){
+            setTitle(R.string.app_name)
+            menuItem.isVisible = false
+        }else {
+            setTitle(R.string.details)
+            menuItem.isVisible = true
+        }
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle item selection
+        return when (item.itemId) {
+            R.id.share_details -> {
+                shareStudioDetails()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private fun shareStudioDetails() {

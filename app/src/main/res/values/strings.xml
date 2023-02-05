@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">FitnessStudios</string>
+    <string name="app_name">Fitness Studios</string>
+    <string name="details">Details</string>
+    <string name="share_menu">Share</string>
 </resources>
