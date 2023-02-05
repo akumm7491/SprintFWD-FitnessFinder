@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.test.fitnessstudios.R
 import com.test.fitnessstudios.databinding.FragmentStudioListBinding
 import com.test.fitnessstudios.ui.adapters.StudioAdapter
+import com.test.fitnessstudios.ui.viewmodels.MainViewModel
 import com.test.fitnessstudios.ui.viewmodels.StudioViewModel
 import kotlinx.coroutines.launch
 
@@ -26,8 +27,8 @@ class StudioListFragment : Fragment(R.layout.fragment_studio_list) {
     private var _binding: FragmentStudioListBinding? = null
     // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
-
-    lateinit var studioViewModel: StudioViewModel
+    private lateinit var mainViewModel: MainViewModel
+    private lateinit var studioViewModel: StudioViewModel
     lateinit var studioAdapter: StudioAdapter
 
 
@@ -43,9 +44,13 @@ class StudioListFragment : Fragment(R.layout.fragment_studio_list) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         studioViewModel = ViewModelProvider(requireActivity())[StudioViewModel::class.java]
+        mainViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
+
         studioAdapter = StudioAdapter()
         studioAdapter.setOnItemClickListener { studio ->
             Log.d(TAG, "Clicked on studio: $studio")
+            // Update the selected studio which will trigger the studio detail fragment to show
+            mainViewModel.setStudioDetail(studio)
         }
 
         setupRecyclerView()
