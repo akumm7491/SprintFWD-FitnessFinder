@@ -6,21 +6,23 @@ import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.FragmentManager
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.android.material.tabs.TabLayoutMediator
+import com.google.gson.Gson
 import com.test.fitnessstudios.R
+import com.test.fitnessstudios.data.models.Studio
 import com.test.fitnessstudios.databinding.ActivityMainBinding
 import com.test.fitnessstudios.helpers.Constants.DEFAULT_LATITUDE
 import com.test.fitnessstudios.helpers.Constants.DEFAULT_LONGITUDE
+import com.test.fitnessstudios.helpers.Constants.KEY_SELECTED_STUDIO
+import com.test.fitnessstudios.helpers.Constants.TAG_STUDIO_DETAIL_FRAGMENT
 import com.test.fitnessstudios.ui.adapters.PagerAdapter
-import com.test.fitnessstudios.ui.fragments.MapFragment
-import com.test.fitnessstudios.ui.fragments.StudioListFragment
+import com.test.fitnessstudios.ui.fragments.StudioDetailFragment
+import com.test.fitnessstudios.ui.viewmodels.MainViewModel
 import com.test.fitnessstudios.ui.viewmodels.StudioViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -31,6 +33,7 @@ class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
 
     private val studioViewModel: StudioViewModel by viewModels()
+    private val mainViewModel: MainViewModel by viewModels()
     private lateinit var binding: ActivityMainBinding
 
     private val defaultLocation = Location("Default").apply {
@@ -43,14 +46,33 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Force light mode for now.
+        AppCompatDelegate.setDefaultNightMode(MODE_NIGHT_NO)
+
+        // Initialize pager and tabs.
         initializePager()
+
+        // Setup error text click listener so we can retry if we fail
+        // to get studios.
         binding.tvError.setOnClickListener {
             studioViewModel.clearError()
             getNearbyStudios()
         }
 
-        // Get studios nearby the default location
+        // Get studios near the default location
         getNearbyStudios()
+
+        // Start listening for studio detail updates
+        listenForStudioDetailUpdates()
+    }
+
+    private fun shareStudioDetails() {
+        mainViewModel.studioDetail.value?.let { studioDetails ->
+            val shareIntent = Intent(Intent.ACTION_SEND)
+            shareIntent.type = "text/plain"
+            shareIntent.putExtra(Intent.EXTRA_TEXT, studioDetails.url)
+            startActivity(Intent.createChooser(shareIntent, "Share link using"))
+        }
     }
 
     private fun initializePager(){
@@ -67,6 +89,51 @@ class MainActivity : AppCompatActivity() {
             }
         }.attach()
     }
+
+    private fun listenForStudioDetailUpdates(){
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mainViewModel.studioDetail.observe(this@MainActivity) { selectedStudio ->
+                    if(selectedStudio != null){
+                        addStudioDetailFragment(selectedStudio)
+                        hideShareDetails = false
+                        invalidateOptionsMenu()
+                    }else {
+                        removeStudioDetailFragment()
+                        hideShareDetails = true
+                        invalidateOptionsMenu()
+                    }
+                }
+            }
+        }
+    }
+    private fun addStudioDetailFragment(selectedStudio: Studio) {
+        if(supportFragmentManager.findFragmentByTag(TAG_STUDIO_DETAIL_FRAGMENT) == null){
+            val studioDetailFragment = StudioDetailFragment()
+            studioDetailFragment.arguments = Bundle().apply {
+                putString(KEY_SELECTED_STUDIO, Gson().toJson(selectedStudio))
+            }
+            supportFragmentManager.beginTransaction()
+                .setCustomAnimations(R.anim.slide_in, R.anim.slide_out, R.anim.slide_in, R.anim.slide_out)
+                .setReorderingAllowed(true)
+                .addToBackStack(TAG_STUDIO_DETAIL_FRAGMENT)
+                .add(R.id.fragment_container, studioDetailFragment, TAG_STUDIO_DETAIL_FRAGMENT)
+                .commit()
+            supportFragmentManager.executePendingTransactions()
+        }
+    }
+
+    private fun removeStudioDetailFragment() {
+        supportFragmentManager.findFragmentByTag(TAG_STUDIO_DETAIL_FRAGMENT)?.let { studioDetailFragment ->
+            supportFragmentManager.beginTransaction()
+                .remove(studioDetailFragment)
+                .commitNow()
+            supportFragmentManager.popBackStack();
+            supportFragmentManager.executePendingTransactions()
+            mainViewModel.setStudioDetail(null)
+        }
+    }
+
 
     private fun getNearbyStudios(){
         lifecycleScope.launch {
@@ -88,6 +155,15 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+        }
+    }
+
+    override fun onBackPressed() {
+        // If the StudioDetailFragmnet is showing, remove it.
+        if(supportFragmentManager.findFragmentByTag(TAG_STUDIO_DETAIL_FRAGMENT) != null){
+            removeStudioDetailFragment()
+        }else {
+            onBackPressedDispatcher.onBackPressed()
         }
     }
 }
