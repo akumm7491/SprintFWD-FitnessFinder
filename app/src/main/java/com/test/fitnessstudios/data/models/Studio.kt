@@ -4,6 +4,7 @@ data class Studio(
     val id: String,
     val name: String,
     val image_url: String,
+    val url: String,
     val rating: String,
     val coordinates: Coordinates,
     val distance: Double,

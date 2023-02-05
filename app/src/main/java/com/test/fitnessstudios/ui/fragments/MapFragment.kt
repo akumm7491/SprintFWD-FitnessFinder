@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -25,6 +24,7 @@ import com.test.fitnessstudios.data.models.Studio
 import com.test.fitnessstudios.databinding.FragmentMapBinding
 import com.test.fitnessstudios.helpers.Constants.DEFAULT_LATITUDE
 import com.test.fitnessstudios.helpers.Constants.DEFAULT_LONGITUDE
+import com.test.fitnessstudios.ui.viewmodels.MainViewModel
 import com.test.fitnessstudios.ui.viewmodels.StudioViewModel
 import kotlinx.coroutines.launch
 
@@ -37,7 +37,8 @@ class MapFragment : Fragment(R.layout.fragment_map) {
     private val binding get() = _binding!!
 
     private lateinit var map: GoogleMap
-    lateinit var studioViewModel: StudioViewModel
+    private lateinit var studioViewModel: StudioViewModel
+    private lateinit var mainViewModel: MainViewModel
     private var studioMarkers = ArrayList<Marker>()
     private var currentStudios = emptyList<Studio>()
 
@@ -56,7 +57,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
             locationPermissionGranted = isGranted
-            Log.e(TAG, "Location permission granted: $isGranted")
+            Log.d(TAG, "Location permission granted: $isGranted")
 
             // Enable the location layer if the permissions are granted
             map.isMyLocationEnabled = isGranted
@@ -78,6 +79,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
 
         // Initialize ViewModel to listen for studio updates
         studioViewModel = ViewModelProvider(requireActivity())[StudioViewModel::class.java]
+        mainViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
         // Initialize map fragment and get the map asynchronously
         val supportMapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
@@ -143,7 +145,9 @@ class MapFragment : Fragment(R.layout.fragment_map) {
             val studioId = marker.tag as String
             val clickedStudio = currentStudios.first { it.id == studioId }
             Log.d(TAG, "Clicked on studio info window: $clickedStudio")
-            // TODO: Navigate to details screen
+
+            // Update the selected studio which will trigger the studio detail fragment to show
+            mainViewModel.setStudioDetail(clickedStudio)
         }
     }
 
