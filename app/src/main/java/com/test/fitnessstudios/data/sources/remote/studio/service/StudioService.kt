@@ -1,13 +1,11 @@
-package com.test.fitnessstudios.data.sources.remote.service
+package com.test.fitnessstudios.data.sources.remote.studio.service
 
 import android.location.Location
-import com.test.fitnessstudios.data.sources.remote.api.StudioApi
-import com.test.fitnessstudios.data.sources.remote.api.StudioResponse
-import com.test.fitnessstudios.data.sources.remote.api.YelpNetwork
+import com.test.fitnessstudios.data.sources.remote.studio.api.StudioApi
+import com.test.fitnessstudios.data.models.studio.StudioResponse
+import com.test.fitnessstudios.data.sources.remote.studio.api.YelpNetwork
 import retrofit2.Call
-import retrofit2.Response
 import javax.inject.Inject
-
 
 class StudioService @Inject constructor(): StudioApi {
 

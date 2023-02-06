@@ -6,8 +6,10 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
 import com.test.fitnessstudios.data.repositories.studio.StudioRepository
-import com.test.fitnessstudios.data.sources.remote.StudioRemoteDataSource
-import com.test.fitnessstudios.data.sources.remote.service.StudioService
+import com.test.fitnessstudios.data.sources.remote.routes.RouteRemoteDataSource
+import com.test.fitnessstudios.data.sources.remote.routes.service.RouteService
+import com.test.fitnessstudios.data.sources.remote.studio.StudioRemoteDataSource
+import com.test.fitnessstudios.data.sources.remote.studio.service.StudioService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,11 +28,11 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideStudioService(): StudioService= StudioService()
+    fun provideStudioService(): StudioService = StudioService()
 
     @Provides
     @Singleton
-    fun provideStudioRemoteDataSource(): StudioRemoteDataSource=StudioRemoteDataSource(
+    fun provideStudioRemoteDataSource(): StudioRemoteDataSource = StudioRemoteDataSource(
         provideStudioService(),
         Dispatchers.IO
     )

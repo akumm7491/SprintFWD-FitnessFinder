@@ -1,5 +1,6 @@
-package com.test.fitnessstudios.data.sources.remote.api
+package com.test.fitnessstudios.data.sources.remote.studio.api
 
+import com.test.fitnessstudios.data.models.studio.StudioResponse
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query

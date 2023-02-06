@@ -18,7 +18,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.gson.Gson
 import com.test.fitnessstudios.R
-import com.test.fitnessstudios.data.models.Studio
+import com.test.fitnessstudios.data.models.studio.Studio
 import com.test.fitnessstudios.databinding.ActivityMainBinding
 import com.test.fitnessstudios.helpers.Constants.DEFAULT_LATITUDE
 import com.test.fitnessstudios.helpers.Constants.DEFAULT_LONGITUDE

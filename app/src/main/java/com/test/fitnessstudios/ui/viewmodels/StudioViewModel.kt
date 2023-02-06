@@ -5,7 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.test.fitnessstudios.data.models.Studio
+import com.test.fitnessstudios.data.models.studio.Studio
 import com.test.fitnessstudios.data.repositories.studio.StudioRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job

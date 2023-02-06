@@ -21,7 +21,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.gson.Gson
 import com.test.fitnessstudios.R
-import com.test.fitnessstudios.data.models.Studio
+import com.test.fitnessstudios.data.models.studio.Studio
 import com.test.fitnessstudios.databinding.FragmentStudioDetailBinding
 import com.test.fitnessstudios.helpers.Constants
 import com.test.fitnessstudios.ui.viewmodels.MainViewModel

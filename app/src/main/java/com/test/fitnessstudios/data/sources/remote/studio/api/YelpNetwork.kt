@@ -1,4 +1,4 @@
-package com.test.fitnessstudios.data.sources.remote.api
+package com.test.fitnessstudios.data.sources.remote.studio.api
 
 import com.test.fitnessstudios.BuildConfig
 import okhttp3.Interceptor

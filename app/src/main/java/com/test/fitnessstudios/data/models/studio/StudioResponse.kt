@@ -1,20 +1,10 @@
-package com.test.fitnessstudios.data.models
+package com.test.fitnessstudios.data.models.studio
 
-data class Studio(
-    val id: String,
-    val name: String,
-    val image_url: String,
-    val url: String,
-    val rating: String,
-    val coordinates: Coordinates,
-    val distance: Double,
-    val phone: String,
-    val display_phone: String
-)
+import com.google.gson.annotations.SerializedName
 
-data class Coordinates(
-    val latitude: Double,
-    val longitude: Double
+data class StudioResponse(
+    @SerializedName("businesses")
+    val studios: List<Studio>
 )
 
 /**  Yelp Business Response Format

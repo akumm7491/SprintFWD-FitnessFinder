@@ -2,16 +2,12 @@ package com.test.fitnessstudios.data.repositories.studio
 
 import android.location.Location
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
-import com.test.fitnessstudios.data.models.Studio
-import com.test.fitnessstudios.data.sources.remote.StudioRemoteDataSource
-import com.test.fitnessstudios.data.sources.remote.api.StudioResponse
+import com.test.fitnessstudios.data.models.studio.Studio
+import com.test.fitnessstudios.data.models.studio.StudioResponse
+import com.test.fitnessstudios.data.sources.remote.studio.StudioRemoteDataSource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
