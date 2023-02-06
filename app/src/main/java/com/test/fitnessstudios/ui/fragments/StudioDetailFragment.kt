@@ -42,12 +42,7 @@ class StudioDetailFragment: Fragment(R.layout.fragment_studio_detail) {
 
     private var locationPermissionGranted = false
     private var currentRoute: Route? = null
-    private var currentRoutePolyline = PolylineOptions().apply {
-        width(12f)
-        color(Color.BLUE)
-        geodesic(true)
-    }
-
+    private var currentRoutePolyline: Polyline? = null
 
     @SuppressLint("MissingPermission")
     private val requestPermissionLauncher =
@@ -148,23 +143,30 @@ class StudioDetailFragment: Fragment(R.layout.fragment_studio_detail) {
             }
 
             // Remove any previous points in the polyline
-            currentRoutePolyline.points.clear()
+            currentRoutePolyline?.remove()
 
 
+            val routePolylineBuilder = PolylineOptions().apply {
+                width(12f)
+                color(Color.BLUE)
+                geodesic(true)
+            }
             // Add all the new route points to the polyline
             for(leg in route.legs) {
                 for(step in leg.steps){
-                    currentRoutePolyline.addAll(PolyUtil.decode(step.polyline.points))
+                    routePolylineBuilder.addAll(PolyUtil.decode(step.polyline.points))
                 }
             }
 
             // Draw the route on the map and animate zoom to include the whole route.
-            map.addPolyline(currentRoutePolyline)
-            zoomToBounds(getRouteBounds(currentRoutePolyline.points), 100)
+            currentRoutePolyline = map.addPolyline(routePolylineBuilder)
+            zoomToBounds(getRouteBounds(routePolylineBuilder.points), 100)
 
         } ?: run {
             // Current route is null so remove any previous route polyline still on the map.
-            Log.e(TAG, "Route ")
+            Log.e(TAG, "Route is null so removing any previously drawn routes")
+            // Remove any previous points in the polyline
+            currentRoutePolyline?.remove()
         }
     }
 

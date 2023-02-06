@@ -27,6 +27,7 @@ import com.test.fitnessstudios.helpers.Constants.TAG_STUDIO_DETAIL_FRAGMENT
 import com.test.fitnessstudios.ui.adapters.PagerAdapter
 import com.test.fitnessstudios.ui.fragments.StudioDetailFragment
 import com.test.fitnessstudios.ui.viewmodels.MainViewModel
+import com.test.fitnessstudios.ui.viewmodels.RouteViewModel
 import com.test.fitnessstudios.ui.viewmodels.StudioViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -38,6 +39,8 @@ class MainActivity : AppCompatActivity() {
 
     private val studioViewModel: StudioViewModel by viewModels()
     private val mainViewModel: MainViewModel by viewModels()
+    private val routeViewModel: RouteViewModel by viewModels()
+
     private lateinit var binding: ActivityMainBinding
 
     // Don't show the shareDetails button in the top bar by default.
@@ -163,6 +166,7 @@ class MainActivity : AppCompatActivity() {
             supportFragmentManager.popBackStack();
             supportFragmentManager.executePendingTransactions()
             mainViewModel.setStudioDetail(null)
+            routeViewModel.setRoute(null)
         }
     }
 
