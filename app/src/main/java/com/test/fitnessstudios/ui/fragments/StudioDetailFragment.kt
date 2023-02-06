@@ -3,6 +3,7 @@ package com.test.fitnessstudios.ui.fragments
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -16,15 +17,15 @@ import com.bumptech.glide.Glide
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.gson.Gson
+import com.google.maps.android.PolyUtil
 import com.test.fitnessstudios.R
+import com.test.fitnessstudios.data.models.routes.Route
 import com.test.fitnessstudios.data.models.studio.Studio
 import com.test.fitnessstudios.databinding.FragmentStudioDetailBinding
 import com.test.fitnessstudios.helpers.Constants
-import com.test.fitnessstudios.ui.viewmodels.MainViewModel
+import com.test.fitnessstudios.ui.viewmodels.RouteViewModel
 import kotlinx.coroutines.launch
 
 class StudioDetailFragment: Fragment(R.layout.fragment_studio_detail) {
@@ -37,8 +38,17 @@ class StudioDetailFragment: Fragment(R.layout.fragment_studio_detail) {
 
     private lateinit var map: GoogleMap
     private lateinit var selectedStudio: Studio
+    private lateinit var routeViewModel: RouteViewModel
 
     private var locationPermissionGranted = false
+    private var currentRoute: Route? = null
+    private var currentRoutePolyline = PolylineOptions().apply {
+        width(12f)
+        color(Color.BLUE)
+        geodesic(true)
+    }
+
+
     @SuppressLint("MissingPermission")
     private val requestPermissionLauncher =
         registerForActivityResult(
@@ -58,6 +68,8 @@ class StudioDetailFragment: Fragment(R.layout.fragment_studio_detail) {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentStudioDetailBinding.inflate(inflater, container, false)
+
+        routeViewModel = ViewModelProvider(requireActivity())[RouteViewModel::class.java]
 
         // Get the selected studio from arguments.
         arguments?.getString(Constants.KEY_SELECTED_STUDIO)?.let { selectedStudioString ->
@@ -83,6 +95,7 @@ class StudioDetailFragment: Fragment(R.layout.fragment_studio_detail) {
             initializeMapConfiguration()
             updateStudioDetails()
             showStudioOnMap()
+            getRouteToStudio()
         }
 
         binding.btnCallBusiness.setOnClickListener {
@@ -94,6 +107,76 @@ class StudioDetailFragment: Fragment(R.layout.fragment_studio_detail) {
                     null)
             ))
         }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun getRouteToStudio() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                val studioLatLng = LatLng(
+                    selectedStudio.coordinates.latitude,
+                    selectedStudio.coordinates.longitude
+                )
+
+                // Get the users last location
+//                val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+//                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+//                    val currentLocation = LatLng(
+//                        location.latitude,
+//                        location.longitude
+//                    )
+//                }
+
+                val currentLocation = LatLng(
+                    33.124155,
+                    -111.105792
+                )
+                routeViewModel.getRoute(studioLatLng, currentLocation).collect { routeUiState ->
+                    Log.v(TAG, "New RouteUiState in StudioDetailFragment: $routeUiState")
+                    currentRoute = routeUiState.route
+                    updateMapWithRoute()
+                }
+            }
+        }
+    }
+
+    private fun updateMapWithRoute() {
+        currentRoute?.let {route ->
+            if(route.legs.isEmpty()){
+                Log.d(TAG, "Current route has no legs so not drawing a route")
+                return
+            }
+
+            // Remove any previous points in the polyline
+            currentRoutePolyline.points.clear()
+
+
+            // Add all the new route points to the polyline
+            for(leg in route.legs) {
+                for(step in leg.steps){
+                    currentRoutePolyline.addAll(PolyUtil.decode(step.polyline.points))
+                }
+            }
+
+            // Draw the route on the map and animate zoom to include the whole route.
+            map.addPolyline(currentRoutePolyline)
+            zoomToBounds(getRouteBounds(currentRoutePolyline.points), 100)
+
+        } ?: run {
+            // Current route is null so remove any previous route polyline still on the map.
+            Log.e(TAG, "Route ")
+        }
+    }
+
+    private fun getRouteBounds(points: List<LatLng>): LatLngBounds {
+        // Create a new instance of LatLngBounds that includes all the route points
+        // so we can zoom to fit the whole route
+        val builder = LatLngBounds.Builder()
+        for(point in points){
+            builder.include(point)
+        }
+        return builder.build()
+
     }
 
     private fun showStudioOnMap() {
@@ -145,6 +228,14 @@ class StudioDetailFragment: Fragment(R.layout.fragment_studio_detail) {
             CameraUpdateFactory.newLatLngZoom(
                 latLng, zoom
             )
+        )
+    }
+
+    private fun zoomToBounds(latLngBounds: LatLngBounds, padding: Int){
+        map.animateCamera(
+            CameraUpdateFactory.newLatLngBounds(
+                latLngBounds,
+                padding)
         )
     }
 
