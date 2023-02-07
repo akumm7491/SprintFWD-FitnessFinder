@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.test.fitnessstudios.data.models.Studio
+import com.test.fitnessstudios.data.models.studio.Studio
 import com.test.fitnessstudios.databinding.StudioListItemBinding
 import java.math.RoundingMode
 import java.text.DecimalFormat

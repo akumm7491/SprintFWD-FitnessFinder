@@ -1,24 +1,16 @@
-package com.test.fitnessstudios.data.sources.remote
+package com.test.fitnessstudios.data.sources.remote.studio
 
 import android.location.Location
-import android.util.Log
-import androidx.lifecycle.MutableLiveData
-import com.test.fitnessstudios.data.models.Studio
-import com.test.fitnessstudios.data.sources.remote.api.StudioResponse
-import com.test.fitnessstudios.data.sources.remote.api.YelpNetwork
-import com.test.fitnessstudios.data.sources.remote.service.StudioService
+import com.test.fitnessstudios.data.models.studio.StudioResponse
+import com.test.fitnessstudios.data.sources.remote.studio.service.StudioService
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import javax.inject.Inject
 
 
 /**
- * Handles Creating, Reading, Updating and Deleting posts from the network.
+ * Handles getting nearby studios from the network.
  * We move the execution to an IO-optimized thread since the YelpApiService
  * doesn't support coroutines and makes synchronous requests.
  *

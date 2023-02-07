@@ -20,7 +20,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.test.fitnessstudios.R
-import com.test.fitnessstudios.data.models.Studio
+import com.test.fitnessstudios.data.models.studio.Studio
 import com.test.fitnessstudios.databinding.FragmentMapBinding
 import com.test.fitnessstudios.helpers.Constants.DEFAULT_LATITUDE
 import com.test.fitnessstudios.helpers.Constants.DEFAULT_LONGITUDE

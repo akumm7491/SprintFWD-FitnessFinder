@@ -1,6 +1,7 @@
-package com.test.fitnessstudios.data.sources.remote.api
+package com.test.fitnessstudios.data.sources.remote.studio.api
 
 import android.location.Location
+import com.test.fitnessstudios.data.models.studio.StudioResponse
 import retrofit2.Call
 
 // Makes studio-related network requests.
