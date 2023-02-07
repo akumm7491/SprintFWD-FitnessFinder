@@ -36,16 +36,12 @@ class RouteViewModel @Inject constructor(
         _routeUiState.update { it.copy(errorFetching = error,  isLoading = false) }
     }
 
-    private fun setRoute(route: Route?) {
+    fun setRoute(route: Route?) {
         _routeUiState.update { it.copy(route = route, isLoading = false) }
     }
 
     // Expose screen UI state and helper functions
     val routeUiState: StateFlow<RoutesUiState> = _routeUiState.asStateFlow()
-
-    fun clearError() {
-        setError(null)
-    }
 
     // Fetch route from a lat/lng pair to a lat/lng pair
     private var fetchJob: Job? = null
