@@ -1,10 +1,7 @@
 package com.test.fitnessstudios.di
 
 
-import android.content.Context
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.request.RequestOptions
+import com.test.fitnessstudios.data.repositories.routes.RoutesRepository
 import com.test.fitnessstudios.data.repositories.studio.StudioRepository
 import com.test.fitnessstudios.data.sources.remote.routes.RouteRemoteDataSource
 import com.test.fitnessstudios.data.sources.remote.routes.service.RouteService
@@ -13,7 +10,6 @@ import com.test.fitnessstudios.data.sources.remote.studio.service.StudioService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
 import javax.inject.Singleton
