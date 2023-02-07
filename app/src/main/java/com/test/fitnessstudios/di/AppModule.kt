@@ -44,4 +44,22 @@ class AppModule {
         Dispatchers.IO
     )
 
+
+    @Provides
+    @Singleton
+    fun provideRouteService(): RouteService = RouteService()
+
+    @Provides
+    @Singleton
+    fun provideRouteRemoteDataSource(): RouteRemoteDataSource = RouteRemoteDataSource(
+        provideRouteService(),
+        Dispatchers.IO
+    )
+
+    @Provides
+    @Singleton
+    fun provideRouteRepository():RoutesRepository=RoutesRepository(
+        provideRouteRemoteDataSource(),
+        Dispatchers.IO
+    )
 }
