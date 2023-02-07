@@ -14,6 +14,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import com.bumptech.glide.Glide
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
@@ -39,10 +41,12 @@ class StudioDetailFragment: Fragment(R.layout.fragment_studio_detail) {
     private lateinit var map: GoogleMap
     private lateinit var selectedStudio: Studio
     private lateinit var routeViewModel: RouteViewModel
+    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
     private var locationPermissionGranted = false
     private var currentRoute: Route? = null
     private var currentRoutePolyline: Polyline? = null
+    private var lastLocation: Location? = null
 
     @SuppressLint("MissingPermission")
     private val requestPermissionLauncher =
@@ -52,8 +56,11 @@ class StudioDetailFragment: Fragment(R.layout.fragment_studio_detail) {
             locationPermissionGranted = isGranted
             Log.d(TAG, "Location permission granted: $isGranted")
 
-            // Enable the location layer if the permissions are granted
-            map.isMyLocationEnabled = isGranted
+            // Enable the location layer if the permissions are granted and the
+            // map has been initialized already
+            if(::map.isInitialized){
+                map.isMyLocationEnabled = isGranted
+            }
         }
 
 
@@ -65,6 +72,7 @@ class StudioDetailFragment: Fragment(R.layout.fragment_studio_detail) {
         _binding = FragmentStudioDetailBinding.inflate(inflater, container, false)
 
         routeViewModel = ViewModelProvider(requireActivity())[RouteViewModel::class.java]
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
         // Get the selected studio from arguments.
         arguments?.getString(Constants.KEY_SELECTED_STUDIO)?.let { selectedStudioString ->
@@ -76,8 +84,34 @@ class StudioDetailFragment: Fragment(R.layout.fragment_studio_detail) {
             Log.e(TAG, "Selected studio argument was empty...")
         }
 
+        // Get the last known location so we can request a route.
+        getLastLocation()
+
         return binding.root
 
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun getLastLocation() {
+        fusedLocationProviderClient.lastLocation.addOnSuccessListener {location ->
+            if(location != null){
+                lastLocation = location
+
+                // Now that we have the last location, get a route to the studio.
+                getRouteToStudio(
+                    LatLng(
+                        selectedStudio.coordinates.latitude,
+                        selectedStudio.coordinates.longitude
+                    ),
+                    LatLng(
+                        location.latitude,
+                        location.longitude
+                    )
+                )
+            }else {
+                Log.e(TAG, "Received a new location, but it was null")
+            }
+        }
     }
 
 
@@ -90,7 +124,6 @@ class StudioDetailFragment: Fragment(R.layout.fragment_studio_detail) {
             initializeMapConfiguration()
             updateStudioDetails()
             showStudioOnMap()
-            getRouteToStudio()
         }
 
         binding.btnCallBusiness.setOnClickListener {
@@ -105,28 +138,10 @@ class StudioDetailFragment: Fragment(R.layout.fragment_studio_detail) {
     }
 
     @SuppressLint("MissingPermission")
-    private fun getRouteToStudio() {
+    private fun getRouteToStudio(studioLatLng: LatLng, currentLatLng: LatLng) {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                val studioLatLng = LatLng(
-                    selectedStudio.coordinates.latitude,
-                    selectedStudio.coordinates.longitude
-                )
-
-                // Get the users last location
-//                val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-//                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-//                    val currentLocation = LatLng(
-//                        location.latitude,
-//                        location.longitude
-//                    )
-//                }
-
-                val currentLocation = LatLng(
-                    33.124155,
-                    -111.105792
-                )
-                routeViewModel.getRoute(studioLatLng, currentLocation).collect { routeUiState ->
+                routeViewModel.getRoute(studioLatLng, currentLatLng).collect { routeUiState ->
                     Log.v(TAG, "New RouteUiState in StudioDetailFragment: $routeUiState")
                     currentRoute = routeUiState.route
                     updateMapWithRoute()
@@ -160,7 +175,7 @@ class StudioDetailFragment: Fragment(R.layout.fragment_studio_detail) {
 
             // Draw the route on the map and animate zoom to include the whole route.
             currentRoutePolyline = map.addPolyline(routePolylineBuilder)
-            zoomToBounds(getRouteBounds(routePolylineBuilder.points), 100)
+            zoomToBounds(getRouteBounds(routePolylineBuilder.points), 200)
 
         } ?: run {
             // Current route is null so remove any previous route polyline still on the map.
@@ -208,13 +223,20 @@ class StudioDetailFragment: Fragment(R.layout.fragment_studio_detail) {
             .into(binding.ivStudioImages)
     }
 
+    @SuppressLint("MissingPermission")
     private fun initializeMapConfiguration() {
         map.uiSettings.isCompassEnabled = true
         map.uiSettings.isRotateGesturesEnabled = true
 
         // The location layer requires permissions to be shown
-        map.uiSettings.isMyLocationButtonEnabled = true
-        requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        if(locationPermissionGranted){
+            map.uiSettings.isMyLocationButtonEnabled = true
+            map.isMyLocationEnabled = true
+        }else {
+            map.uiSettings.isMyLocationButtonEnabled = false
+            map.isMyLocationEnabled = false
+            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
         map.setOnMyLocationClickListener {
             if(locationPermissionGranted){
                 zoomToLatLng(LatLng(it.latitude, it.longitude), 10f)
