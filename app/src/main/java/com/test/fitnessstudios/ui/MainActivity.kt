@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.gson.Gson
 import com.test.fitnessstudios.R
@@ -123,6 +124,16 @@ class MainActivity : AppCompatActivity() {
                 1 -> tab.text = "List"
             }
         }.attach()
+
+        // Listen for the last tab position and set the pager to that tab.
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                mainViewModel.getLastTabPosition().collect{ pos ->
+                    Log.v(TAG, "Last tab position was: $pos")
+                    binding.pager.setCurrentItem(pos, false)
+                }
+            }
+        }
     }
 
     private fun listenForStudioDetailUpdates(){
@@ -201,5 +212,15 @@ class MainActivity : AppCompatActivity() {
         }else {
             onBackPressedDispatcher.onBackPressed()
         }
+    }
+
+    override fun onStop() {
+        // Store the last tab position before bing stopped
+        lifecycleScope.launch {
+            val lastPos = binding.pager.currentItem
+            Log.v(TAG, "Storing the last tab position: $lastPos")
+            mainViewModel.setLastTabPosition(lastPos)
+        }
+        super.onStop()
     }
 }
