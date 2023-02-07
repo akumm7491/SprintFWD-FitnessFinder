@@ -3,7 +3,7 @@ package com.test.fitnessstudios.ui.viewmodels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.test.fitnessstudios.data.models.Studio
+import com.test.fitnessstudios.data.models.studio.Studio
 
 class MainViewModel : ViewModel() {
     private val mutableStudioDetail = MutableLiveData<Studio?>()
