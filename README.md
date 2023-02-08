@@ -3,12 +3,15 @@ SprintFWD Android Code Challenge which finds fitness studios nearby, displays th
 
 
 ## Screenshots
-<img src="https://i.imgur.com/ffrxMha.png" width="150">  <img src="https://i.imgur.com/h5brhfL.png" width="150">  <img src="https://i.imgur.com/3gyJns6.png" width = "150">  <img src="https://i.imgur.com/uGkE9R6.png" width="150">  <img src="https://i.imgur.com/YtqH9MG.png" width="150">
-
-
+<img src="https://i.imgur.com/ffrxMha.png" width="150">  <img src="https://i.imgur.com/h5brhfL.png" width="150">  <img src="https://i.imgur.com/3gyJns6.png" width = "150">  <img src="https://i.imgur.com/uGkE9R6.png" width="150">  <img src="https://i.imgur.com/YtqH9MG.png" width="150"> <img src="https://i.imgur.com/juv8oRx.gif" width="150"> 
 
 ## Getting Started
 1. Create or Update the local.properties file in the root directory
 2. Add a field called MAPS_API_KEY and set it to the googleAPIKey from APIKeys.kt that was provided with the project
 3. Add a field called YELP_API_KEY and set it to the yelpAPIKey from APIKeys.kt that was provided with the project
 4. Run the project.
+
+## Demo
+https://user-images.githubusercontent.com/6148764/217395115-131e6404-b7a4-419a-aa8e-07985672dcb5.mp4
+
+
